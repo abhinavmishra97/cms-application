@@ -15,7 +15,7 @@ export async function POST(request) {
   try {
     const post = createPost({ title, content, author });
     return NextResponse.json(post, { status: 201 });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error}, { status: 400 });
   }
 }
