@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function NewPage({ onClose }) {
+export default function NewPage() {
   const [form, setForm] = useState({ title: "", slug: "", content: "" });
   const [error, setError] = useState("");
   const router = useRouter();
@@ -23,11 +23,15 @@ export default function NewPage({ onClose }) {
     });
     if (res.ok) {
       const data = await res.json();
-      router.push(`/pages/${data.slug}`);
+      router.push(`/pages/${data.slug}`); // Navigate to the new page
     } else {
       const data = await res.json();
       setError(data.error);
     }
+  };
+
+  const handleCancel = () => {
+    router.push("/"); // Navigate back to the dashboard
   };
 
   return (
@@ -88,7 +92,7 @@ export default function NewPage({ onClose }) {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCancel}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
               Cancel
