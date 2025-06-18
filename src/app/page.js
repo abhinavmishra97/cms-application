@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -23,7 +22,7 @@ export default function Home() {
       const data = await response.json();
       setPosts(data);
     } catch (error) {
-      console.error("error fetching posts", error);
+      console.error("Error fetching posts:", error);
     } finally {
       setIsLoading(false);
     }
@@ -35,17 +34,17 @@ export default function Home() {
       const data = await response.json();
       setPages(data);
     } catch (error) {
-      console.error("error fetching pages", error);
+      console.error("Error fetching pages:", error);
     }
   };
 
   const handleDelete = async (post) => {
-    if (confirm(`delete this post "${post.title}"?`)) {
+    if (confirm(`Delete this post "${post.title}"?`)) {
       try {
         await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
         fetchPosts();
       } catch (error) {
-        console.error("error deleting post:", error);
+        console.error("Error deleting post:", error);
       }
     }
   };
@@ -287,7 +286,7 @@ function PostForm({ post, onClose }) {
       onClose();
     } catch (error) {
       setError("Error saving post.");
-      console.error("error saving post:", error);
+      console.error("Error saving post:", error);
     }
   };
 
@@ -363,7 +362,6 @@ function PostForm({ post, onClose }) {
 function NewPage({ onClose }) {
   const [form, setForm] = useState({ title: "", slug: "", content: "" });
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -381,7 +379,7 @@ function NewPage({ onClose }) {
     });
     if (res.ok) {
       const data = await res.json();
-      router.push(`/pages/${data.slug}`);
+      onClose(); // Close the form after successful submission
     } else {
       const data = await res.json();
       setError(data.error);
