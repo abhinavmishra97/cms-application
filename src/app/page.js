@@ -11,8 +11,6 @@ export default function Home() {
   const [view, setView] = useState("dashboard"); // State to toggle between views
   const [editingPost, setEditingPost] = useState(null);
 
-  const router = useRouter();
-
   useEffect(() => {
     fetchPosts();
     fetchPages();
