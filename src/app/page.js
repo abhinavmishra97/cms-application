@@ -378,10 +378,8 @@ function NewPage({ onClose }) {
       body: JSON.stringify(form),
     });
     if (res.ok) {
-      const data = await res.json();
       onClose(); // Close the form after successful submission
     } else {
-      const data = await res.json();
       setError(data.error);
     }
   };
