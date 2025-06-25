@@ -121,7 +121,7 @@ export default function Home() {
     >
       {/* Navbar */}
       <motion.div
-        className="flex justify-between items-center mb-8 sticky top-10 z-20 backdrop-blur px-8 py-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all shadow-lg"
+        className="flex justify-between items-center mb-10 sticky top-5 z-20 backdrop-blur px-8 py-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-all shadow-lg"
         variants={itemVariants}
       >
         <div>
@@ -203,40 +203,58 @@ export default function Home() {
           </motion.div>
 
           <motion.h2
-            className="text-3xl text-center font-semibold mt-10 m-4"
+            className="text-3xl text-center font-semibold mt-10 mb-6"
             variants={itemVariants}
           >
             Pages
           </motion.h2>
+
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             variants={containerVariants}
           >
             {pages.map((page) => (
               <motion.div
-                className="relative border rounded-lg p-6 shadow-lg hover:shadow-lg hover:shadow-gray-700 transition-all bg-gray-900 hover:bg-gray-950 group"
                 key={page.id}
+                className="relative border rounded-lg p-6 shadow-lg hover:shadow-lg hover:shadow-gray-700 transition-all bg-gray-900 hover:bg-gray-950 group"
                 variants={combinedVariants}
                 whileHover="hover"
               >
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center justify-between">
+                  {/* Left section: photo + text */}
+                  <div className="flex items-center space-x-4">
+                    {/* Optional photo thumbnail */}
+                    {page.photo ? (
+                      <img
+                        src={page.photo}
+                        alt={page.title}
+                        className="w-16 h-16 object-cover rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+                        photo
+                      </div>
+                    )}
+
+                    {/* Text: title and content */}
                     <div>
-                      <h2 className="text-xl font-semibold">{page.title}</h2>
+                      <h3 className="text-base font-semibold text-white">
+                        {page.title}
+                      </h3>
                       <p className="text-sm text-gray-400">
                         Slug: <span className="font-mono">{page.slug}</span>
-                      </p>
-                    </div>
-                    <div>
-                      <Link
-                        href={`/pages/${page.slug}`}
-                        className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-all"
-                      >
-                        View
-                      </Link>
+                      </p> <br/>
+                      <p className="text-m text-gray-300">{page.content}</p>
                     </div>
                   </div>
-                  <p className="text-gray-300">{page.content}</p>
+
+                  {/* Right section: View button */}
+                  <Link
+                    href={`/pages/${page.slug}`}
+                    className="ml-4 bg-blue-500 text-white text-sm px-4 py-1 rounded-md hover:bg-blue-600 transition-all"
+                  >
+                    View
+                  </Link>
                 </div>
               </motion.div>
             ))}
@@ -360,33 +378,47 @@ function PostForm({ post, onClose }) {
 }
 
 function NewPage({ onClose }) {
-  const [form, setForm] = useState({ title: "", slug: "", content: "" });
+  const [form, setForm] = useState({
+    title: "",
+    slug: "",
+    content: "",
+    photo: null,
+  });
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug)) {
       setError(
         "Slug must be lowercase, alphanumeric, and may include hyphens."
       );
       return;
     }
-    const res = await fetch("/api/pages", {
+
+    const formData = new FormData();
+    formData.append("title", form.title);
+    formData.append("slug", form.slug);
+    formData.append("content", form.content);
+    formData.append("photo", form.photo);
+
+    const res = await fetch("/api/pages/new", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: formData,
     });
+
     if (res.ok) {
       onClose(); // Close the form after successful submission
     } else {
-      setError(data.error);
+      const data = await res.json();
+      setError(data.error || "Error creating page.");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="p-6 rounded-lg w-full max-w-md shadow-2xl shadow-gray-500/50 bg-gray-800 text-white">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-8">
+      <div className="mt-20 p-8 rounded-lg w-full max-h-fit max-w-md shadow-2xl shadow-gray-`500/50 bg-gray-800 text-white">
         <h2 className="text-xl font-bold mb-4">Create New Page</h2>
 
         <form onSubmit={handleSubmit}>
@@ -427,6 +459,19 @@ function NewPage({ onClose }) {
                 setForm((f) => ({ ...f, content: e.target.value }))
               }
               className="w-full border rounded px-3 py-2 h-32 bg-gray-700 text-white"
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Photo</label>
+            <input
+              type="file"
+              onChange={(e) =>
+                setForm((f) => ({ ...f, photo: e.target.files[0] }))
+              }
+              className="w-full border rounded px-3 py-2 bg-gray-700 text-white"
+              accept="image/*"
               required
             />
           </div>

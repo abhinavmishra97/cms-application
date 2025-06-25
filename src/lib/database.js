@@ -23,7 +23,10 @@ CREATE TABLE IF NOT EXISTS pages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   slug TEXT UNIQUE,
-  content TEXT NOT NULL
+  content TEXT NOT NULL,
+  photo TEXT, -- Field to store the photo path
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `);
 
@@ -67,13 +70,13 @@ export function deletePost(id) {
 }
 
 // --- PAGES FUNCTIONS ---
-export function createPage({ title, slug, content }) {
+export function createPage({ title, slug, content, photo }) {
   const stmt = db.prepare(`
-    INSERT INTO pages (title, slug, content)
-    VALUES (?, ?, ?)
+    INSERT INTO pages (title, slug, content, photo)
+    VALUES (?, ?, ?, ?)
   `);
-  const result = stmt.run(title, slug, content);
-  return { id: result.lastInsertRowid, title, slug, content };
+  const result = stmt.run(title, slug, content, photo);
+  return { id: result.lastInsertRowid, title, slug, content, photo };
 }
 
 export function getPageBySlug(slug) {
@@ -82,22 +85,41 @@ export function getPageBySlug(slug) {
 }
 
 export function getAllPages() {
-  const stmt = db.prepare("SELECT * FROM pages");
+  const stmt = db.prepare("SELECT * FROM pages ORDER BY created_at DESC");
   return stmt.all();
 }
 
-export function updatePage(slug, { title, content }) {
+export function updatePage(slug, { title, content, photo }) {
   const stmt = db.prepare(`
     UPDATE pages
-    SET title = ?, content = ?
+    SET title = ?, content = ?, photo = ?, updated_at = CURRENT_TIMESTAMP
     WHERE slug = ?
   `);
-  stmt.run(title, content, slug);
+  stmt.run(title, content, photo, slug);
 }
 
 export function deletePage(slug) {
   const stmt = db.prepare("DELETE FROM pages WHERE slug = ?");
   stmt.run(slug);
 }
+
+// Utility functions for pages table management
+// export function deletePagesTable() {
+//   db.exec("DROP TABLE IF EXISTS pages;");
+// }
+
+// export function recreatePagesTable() {
+//   db.exec(`
+//     CREATE TABLE IF NOT EXISTS pages (
+//       id INTEGER PRIMARY KEY AUTOINCREMENT,
+//       title TEXT NOT NULL,
+//       slug TEXT UNIQUE,
+//       content TEXT NOT NULL,
+//       photo TEXT,
+//       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+//       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+//     );
+//   `);
+// }
 
 export default db;

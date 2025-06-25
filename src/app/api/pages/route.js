@@ -1,21 +1,39 @@
+import { getAllPages, createPage } from "@/lib/database";
 import { NextResponse } from "next/server";
-import { createPage, getAllPages } from "@/lib/database";
 
 export async function GET() {
-  const pages = getAllPages();
-  return NextResponse.json(pages);
+  try {
+    const pages = await getAllPages();
+    return NextResponse.json(pages);
+  } catch (error) {
+    console.error("Error fetching pages:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch pages" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request) {
-  const { title, slug, content } = await request.json();
-  if (!title || !slug || !content) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
-  }
   try {
-    const page = createPage({ title, slug, content });
-    return NextResponse.json(page, { status: 201 });
-  } catch (e) {
-      console.error(e);
-    return NextResponse.json({ error: "Slug must be unique" }, { status: 400 });
+    const body = await request.json();
+    const { title, slug, content, photo } = body;
+
+    if (!title || !slug || !content) {
+      return NextResponse.json(
+        { error: "Title, slug, and content are required." },
+        { status: 400 }
+      );
+    }
+
+    const newPage = await createPage({ title, slug, content, photo });
+
+    return NextResponse.json(newPage, { status: 201 });
+  } catch (error) {
+    console.error("Error creating page:", error);
+    return NextResponse.json(
+      { error: "Failed to create page" },
+      { status: 500 }
+    );
   }
 }
