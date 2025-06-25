@@ -23,7 +23,7 @@ export const POST = async (req) => {
     );
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const formData = {};
     let photoPath = null;
 
